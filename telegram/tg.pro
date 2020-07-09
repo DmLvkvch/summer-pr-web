@@ -15,8 +15,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        database.cpp \
         main.cpp \
-        telegrambot.cpp
+        telegrambot.cpp \
+        vkmanager.cpp \
+        vkpost.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -28,4 +31,22 @@ unix|win32: LIBS += -ljsoncpp
 unix|win32: LIBS += -lcurl
 
 HEADERS += \
-    telegrambot.h
+    database.h \
+    telegrambot.h \
+    vkmanager.h \
+    vkpost.h
+
+LIBS+=$$PWD/vk.so
+INCLUDEPATH+=$$PWD/
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/release/ -lmongocxx-static
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/debug/ -lmongocxx-static
+else:unix: LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/ -lmongocxx-static
+
+INCLUDEPATH += $$PWD/../../../opt/mongo-cxx-driver/include/mongocxx/v_noabi
+LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/ -lbsoncxx-static
+INCLUDEPATH += $$PWD/../../../opt/mongo-cxx-driver/include/bsoncxx/v_noabi
+LIBS += -L$$PWD/../../../usr/local/lib/ -lmongoc-1.0
+INCLUDEPATH += $$PWD/../../../usr/local/include/libmongoc-1.0
+LIBS += -L$$PWD/../../../usr/local/lib/ -lbson-1.0
+INCLUDEPATH += $$PWD/../../../usr/local/include/libbson-1.0
