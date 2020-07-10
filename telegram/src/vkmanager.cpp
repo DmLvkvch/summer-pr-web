@@ -35,7 +35,7 @@ VkManager::VkManager(const VkManager& m)
 VkManager::VkManager()
 {
 
-    api.auth("", "", "3498e4d5ccb8836cfee69075b28e1bfbb67188670b172456bbefe44db4645c264ab7cd7dab79c0868f140");
+    api.auth("", "", "");
 }
 
 

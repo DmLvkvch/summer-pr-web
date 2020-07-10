@@ -21,6 +21,7 @@ TelegramBot::TelegramBot(std::string token, QObject *parent) : QObject(parent)
 TelegramBot::~TelegramBot()
 {
     delete this->api;
+    delete manager;
 }
 
 void TelegramBot::managerFinished(QNetworkReply *reply, std::string id) {
@@ -29,20 +30,35 @@ void TelegramBot::managerFinished(QNetworkReply *reply, std::string id) {
         return;
     }
     QString answer = reply->readAll();
-    qDebug()<<answer;
+    qDebug()<<QString::fromStdString(id)<<" "<<answer;
+    if(answer=="" || !answer.contains("access_token"))
+        return;
     QJsonDocument doc = QJsonDocument::fromJson(answer.toUtf8());
     QVariantMap msg = doc.object().toVariantMap();
     std::string token = msg["access_token"].toString().toStdString();
-    std::cout<<token;
-    //return token;
     VkManager vk(token);
     users.insert(QString::fromStdString(id), vk);
-    std::cout<<id<<" "<<token;
+    this->api->sendMessage(id, "Hello");
+    delete manager;
+    manager = new QNetworkAccessManager();
+    //QObje
 }
 
-void sendMultiMedia(std::string id, QList<QString> multimedia)
+void TelegramBot::sendMultiMedia(std::string id, QList<QString> multimedia)
 {
-
+    std::string query = "https://api.telegram.org/bot1335356640:AAEd3ZJ16EceNkXx46PgNM9q8Gd7vchgsxk/sendMediaGroup?";
+    std::string chat_id = "chat_id="+id;
+    std::string media = "media=[";
+    for(QString tmp : multimedia)
+    {
+        media+="{\"type\":\"photo\",\"media\":\""+tmp.toStdString()+"\"},";
+    }
+    media = media.substr(0, media.length()-1);
+    media+="]";
+    query+=chat_id+"&"+media;
+    std::cout<<query<<std::endl;
+    this->request.setUrl(QString::fromStdString(query));
+    this->reply = this->manager->get(this->request);
 }
 
 std::string TelegramBot::getChatId(QVariantMap msg)
@@ -63,57 +79,52 @@ std::string TelegramBot::getUserId(QVariantMap msg)
 void TelegramBot::auth(std::string id)
 {
     QObject::connect(manager, &QNetworkAccessManager::finished,
-    [=](QNetworkReply* r)
-        {
-            managerFinished(r, id);
-        });
-        this->api->sendMessage(id, "https://oauth.vk.com/authorize?client_id=7532475&display=page&redirect_uri="
-                                   "https://556af7a0e8bb.ngrok.io&scope=friends%2Cwall%2Cgroups%2Coffline&response_type=code&v=5.52");
+                     [=](QNetworkReply* reply){
+        managerFinished(reply, id);
+    });
+    this->api->sendMessage(id, "https://oauth.vk.com/authorize?client_id=7532475&display=page&redirect_uri="
+                               "https://556af7a0e8bb.ngrok.io&scope=friends%2Cwall%2Cgroups%2Coffline&response_type=code&v=5.52");
 }
 
-void TelegramBot::onAuth(QUrl url)
+void TelegramBot::parseCode(QUrl url)
 {
     QStringList list = url.toString().split("=", QString::SkipEmptyParts);
-    QString s = list.at(list.size()-1);
-    this->request.setUrl("https://oauth.vk.com/access_token?client_id=7532475&client_secret=wsQzpMeHSVGmubpSX2no&redirect_uri=https://556af7a0e8bb.ngrok.io&code="+s);
+    QString code = list.at(list.size()-1);
+    this->request.setUrl("https://oauth.vk.com/access_token?client_id=7532475&client_secret=wsQzpMeHSVGmubpSX2no&redirect_uri=https://556af7a0e8bb.ngrok.io&code="+code);
     this->reply = this->manager->get(this->request);
 }
 
-void TelegramBot::onMessageReceived(QVariantMap msg)
+void TelegramBot::onTgMessageReceived(QVariantMap msg)
 {
     std::string from = this->getUserId(msg);
     std::string message = this->getTelegramMessage(msg);
     std::string chat = this->getChatId(msg);
     if(message=="/start")
     {
-//            QStringList list = request.url().toString().split("=", QString::SkipEmptyParts);
-//            QString s = list.at(list.size()-1);
-//            this->request.setUrl("https://oauth.vk.com/access_token?client_id=7532475&client_secret=wsQzpMeHSVGmubpSX2no&redirect_uri=https://556af7a0e8bb.ngrok.io&code="+s);
-//            this->reply = this->manager->get(this->request);
-        auth(from);
-
+        auth(chat);
     }
-//    emit messageReceived(from, message, chat);
-    if(message=="get"){
+    else if(message=="/get"){
         for (auto it = users.begin(); it != users.end(); ++it)
         {
-            qDebug()<<it.key()<<" "<<QString::fromStdString(it.value().getToken());
+            qDebug()<<it.key()<<" --- "<<QString::fromStdString(it.value().getToken());
         }
         VkManager vk = users.value(QString::fromStdString(chat));
         QList<VkPost> list = vk.getWall();
-        b.add(from, list);
         for(VkPost post:list)
         {
             QDateTime date;
             date.setTime_t(post.getDate());
             QString time = date.toString(Qt::SystemLocaleShortDate);
-            std::string message = post.getOwner()+"\n"+post.getText()+"\n"+time.toStdString();
+            QDateTime t = QDateTime::fromTime_t(post.getDate());
+            std::string message = post.getOwner()+"\n"+post.getText()+"\n"+t.toString().toStdString();
             QList<QString> l = post.getPhotos();
-            for(QString p:l)
-            {
-                message+=p.toStdString()+"\n";
-            }
             this->api->sendMessage(chat, message);
+            if(l.size()>1)
+            {
+                sendMultiMedia(chat, l);
+            }
+            else if(l.size()==1)
+                api->sendPhoto(chat, l[0].toStdString());
         }
     }
 }
@@ -124,15 +135,12 @@ bool TelegramBot::handleRequest(Tufao::HttpServerRequest &request,
     QByteArray requestBody = request.readBody();
     QJsonDocument doc = QJsonDocument::fromJson(requestBody);
     QVariantMap msg = doc.object().toVariantMap();
-//    std::string chat_id = getChatId(msg);
-//    std::string message_text = getTelegramMessage(msg);
-//    this->api->sendMessage(chat_id, message_text);
-    qDebug()<<request.url().toString();
     if(request.url().toString().contains("?code=")){
-        onAuth(request.url());
+        parseCode(request.url());
     }
-    else
-        onMessageReceived(msg);
+    else {
+        onTgMessageReceived(msg);
+    }
     response.writeHead(Tufao::HttpResponseStatus::OK);
     response.headers().replace("Content-Type", "text/html; charset=utf-8");
     response << "<html><head><title>Request dumper</title></head><body>"

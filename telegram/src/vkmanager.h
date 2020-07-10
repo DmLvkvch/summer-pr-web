@@ -14,10 +14,9 @@ public:
     VkManager();
     QList<VkPost> getWall();
     std::string getToken() const;
-    void setToken(const std::string &value);
-
-    VkManager(const VkManager &m);
-    VkManager &operator =(const VkManager &vk);
+    void setToken(const std::string &);
+    VkManager(const VkManager &);
+    VkManager &operator =(const VkManager &);
 public slots:
     void handle();
 private:
