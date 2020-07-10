@@ -39,10 +39,7 @@ HEADERS += \
 LIBS+=$$PWD/vk.so
 INCLUDEPATH+=$$PWD/
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/release/ -lmongocxx-static
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/debug/ -lmongocxx-static
-else:unix: LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/ -lmongocxx-static
-
+LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/ -lmongocxx-static
 INCLUDEPATH += $$PWD/../../../opt/mongo-cxx-driver/include/mongocxx/v_noabi
 LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/ -lbsoncxx-static
 INCLUDEPATH += $$PWD/../../../opt/mongo-cxx-driver/include/bsoncxx/v_noabi

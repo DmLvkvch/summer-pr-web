@@ -25,9 +25,10 @@ public:
     explicit TelegramBot(std::string api, QObject *parent = 0);
     ~TelegramBot();
     std::string getUserId(QVariantMap msg);
-    void onMessageReceived(QVariantMap message);
+    void onTgMessageReceived(QVariantMap message);
     void auth(std::string id);
-    void onAuth(QUrl url);
+    void sendMultiMedia(std::string id, QList<QString> multimedia);
+    void parseCode(QUrl url);
 signals:
     void messageReceived(std::string, std::string, std::string);
 public slots:
@@ -35,15 +36,12 @@ public slots:
                        Tufao::HttpServerResponse &response) override;
     void managerFinished(QNetworkReply *reply, std::string id);
 private:
-    Database b;
-    VkManager vk;
     QNetworkAccessManager *manager;
     QNetworkRequest request;
     QNetworkReply* reply;
     std::string getTelegramMessage(QVariantMap message);
     std::string getChatId(QVariantMap message);
     Api* api;
-    std::string token;
     QHash<QString, VkManager> users;
 };
 #endif // TELEGRAMBOT_H

@@ -2,14 +2,11 @@
 #include <tgbot/bot.h>
 #include <tgbot/methods/api.h>
 #include <tgbot/methods/types.h>
-#include <iostream>
 #include <Tufao/HttpServer>
 #include <Tufao/HttpServerRequest>
 #include <Tufao/HttpServerRequestRouter>
 #include <Tufao/Headers>
-#include <QUrl>
 #include <QCoreApplication>
-#include <QDebug>
 #include <QRegularExpression>
 #include "telegrambot.h"
 #include "database.h"
