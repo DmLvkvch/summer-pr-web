@@ -11,6 +11,7 @@
 #include "database.h"
 #include "vkmanager.h"
 #include "vkpost.h"
+#include <QHash>
 using namespace tgbot;
 using namespace types;
 using namespace methods;
@@ -25,12 +26,14 @@ public:
     ~TelegramBot();
     std::string getUserId(QVariantMap msg);
     void onMessageReceived(QVariantMap message);
+    void auth(std::string id);
+    void onAuth(QUrl url);
 signals:
     void messageReceived(std::string, std::string, std::string);
 public slots:
     bool handleRequest(Tufao::HttpServerRequest &request,
                        Tufao::HttpServerResponse &response) override;
-    void managerFinished(QNetworkReply *reply);
+    void managerFinished(QNetworkReply *reply, std::string id);
 private:
     Database b;
     VkManager vk;
@@ -41,5 +44,6 @@ private:
     std::string getChatId(QVariantMap message);
     Api* api;
     std::string token;
+    QHash<QString, VkManager> users;
 };
 #endif // TELEGRAMBOT_H

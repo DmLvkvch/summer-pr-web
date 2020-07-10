@@ -14,6 +14,22 @@ using json=::nlohmann::json;
 VkManager::VkManager(std::string token)
 {
     this->token = token;
+    api.auth("", "", this->token);
+}
+
+VkManager &VkManager::operator=(const VkManager& vk)
+{
+    if(&vk==this)
+        return *this;
+    this->token = vk.token;
+    this->api.auth("", "", this->token);
+    return *this;
+}
+
+VkManager::VkManager(const VkManager& m)
+{
+    this->token = m.token;
+    this->api.auth("", "", this->token);
 }
 
 VkManager::VkManager()
@@ -26,7 +42,7 @@ VkManager::VkManager()
 QList<VkPost> VkManager::getWall()
 {
     QList<VkPost> list;
-
+    std::cout<<token;
     json data;
     data = api.call("wall.get");
     std::string str = data.dump();
