@@ -16,6 +16,8 @@ public:
     std::string getToken() const;
     void setToken(const std::string &value);
 
+    VkManager(const VkManager &m);
+    VkManager &operator =(const VkManager &vk);
 public slots:
     void handle();
 private:
