@@ -104,7 +104,7 @@ RUN git checkout 1.1
 RUN mkdir build
 WORKDIR build
 RUN ls
-RUN cmake _DCMAKE_INSTALL_PREFIX=/usr ..
+RUN cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 RUN make -j5
 RUN sudo make install
 WORKDIR /home/dmlvkvch
@@ -118,4 +118,7 @@ RUN make
 RUN ls
 WORKDIR /home/dmlvkvch
 RUN cp -i VK/vk.so .
+RUN ls
+RUN make
+RUN ls
 ENTRYPOINT ["./tg"]
