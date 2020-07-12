@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     QObject::connect(&server, &Tufao::HttpServer::requestReady,
                          &h, &TelegramBot::handleRequest);
     //qDebug()<<vk.getNewsfeed();
-    server.listen(QHostAddress("127.0.0.1"), 8080);
+    server.listen(QHostAddress("0.0.0.0"), 8080);
     return a.exec();
 
 }
