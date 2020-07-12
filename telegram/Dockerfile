@@ -100,14 +100,22 @@ RUN apt-get install -y libpthread-stubs0-dev
 WORKDIR /home/dmlvkvch/tufao
 RUN git clone https://github.com/vinipsmaker/tufao
 WORKDIR tufao/
+RUN git checkout 1.1
+RUN mkdir build
+WORKDIR build
 RUN ls
-RUN git submodule update --init
-RUN cmake .
-RUN make clean
-RUN make && sudo make install
-WORKDIR /home/build
-RUN make -C ../src/src
-RUN qmake "CONFIG+=tg" ../src/tg.pro
+RUN cmake _DCMAKE_INSTALL_PREFIX=/usr ..
+RUN make -j5
+RUN sudo make install
+WORKDIR /home/dmlvkvch
+RUN ls
+RUN make -C src
+RUN qmake "CONFIG+=tg" tg.pro
+RUN ls
+RUN git clone https://github.com/Kolsha/VK
+WORKDIR VK
 RUN make
-COPY --from=build /app/build/tg .
+RUN ls
+WORKDIR /home/dmlvkvch
+RUN cp -i VK/vk.so .
 ENTRYPOINT ["./tg"]
