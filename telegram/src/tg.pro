@@ -1,5 +1,5 @@
 QT -= gui
-QT+=core websockets
+QT+=core
 CONFIG += c++11 console TUFAO1
 CONFIG -= app_bundle
 
@@ -17,9 +17,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         database.cpp \
         main.cpp \
+        src/api.cpp \
+        src/attachment.cpp \
+        src/messages.cpp \
         telegrambot.cpp \
         vkmanager.cpp \
         vkpost.cpp
+
+HEADERS += \
+    database.h \
+    src/api.h \
+    src/attachment.h \
+    src/json.hpp \
+    src/messages.h \
+    telegrambot.h \
+    vkmanager.h \
+    vkpost.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -29,15 +42,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 unix|win32: LIBS += -ltgbot
 unix|win32: LIBS += -ljsoncpp
 unix|win32: LIBS += -lcurl
-
-HEADERS += \
-    database.h \
-    telegrambot.h \
-    vkmanager.h \
-    vkpost.h
-
-LIBS+=$$PWD/vk.so
-INCLUDEPATH+=$$PWD/
 
 LIBS += -L$$PWD/../../../opt/mongo-cxx-driver/lib/ -lmongocxx-static
 INCLUDEPATH += $$PWD/../../../opt/mongo-cxx-driver/include/mongocxx/v_noabi

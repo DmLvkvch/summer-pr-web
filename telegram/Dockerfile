@@ -48,7 +48,6 @@ RUN apt update && \
 	qt5-default \
 	libqt5webkit5-dev \
 	qtbase5-private-dev
-COPY ./src /home/dmlvkvch
 RUN ln -s /usr/include/jsoncpp/json/ /usr/include/json
 RUN apt-get -y update \
 	&& apt-get -y upgrade
@@ -108,6 +107,7 @@ RUN cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 RUN make -j5
 RUN sudo make install
 WORKDIR /home/dmlvkvch
+COPY ./src /home/dmlvkvch
 RUN ls
 RUN make -C src
 RUN qmake "CONFIG+=tg" tg.pro
@@ -121,4 +121,4 @@ RUN cp -i VK/vk.so .
 RUN ls
 RUN make
 RUN ls
-ENTRYPOINT ["./tg"]
+CMD ./tg $PORT
