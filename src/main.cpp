@@ -21,8 +21,9 @@ using json=::nlohmann::json;
 int main(int argc, char** argv) {
 
     QCoreApplication a(argc, argv);
-    std::cout<<argv[1]<<" "<<argc<<std::endl;
-    int port = std::atoi(argv[1]);
+    int port = 80;
+    if(argc>1)
+    	port = std::atoi(argv[1]);
     Tufao::HttpServer server;
     TelegramBot h(std::string("1335356640:AAEd3ZJ16EceNkXx46PgNM9q8Gd7vchgsxk"));
     QObject::connect(&server, &Tufao::HttpServer::requestReady,

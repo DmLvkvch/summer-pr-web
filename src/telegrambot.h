@@ -1,6 +1,7 @@
 #ifndef TELEGRAMBOT_H
 #define TELEGRAMBOT_H
 #include <QNetworkAccessManager>
+#include <string>
 #include <QObject>
 #include <Tufao/AbstractHttpServerRequestHandler>
 #include <tgbot/bot.h>
@@ -29,6 +30,7 @@ public:
     void auth(std::string id);
     void sendMultiMedia(std::string id, QList<QString> multimedia);
     void parseCode(QUrl url);
+    void checkTime(std::string chat);
 signals:
     void messageReceived(std::string, std::string, std::string);
 public slots:
@@ -43,5 +45,6 @@ private:
     std::string getChatId(QVariantMap message);
     Api* api;
     QHash<QString, VkManager> users;
+    DataBase* b;
 };
 #endif // TELEGRAMBOT_H

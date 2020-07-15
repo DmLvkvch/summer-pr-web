@@ -15,12 +15,14 @@
 TelegramBot::TelegramBot(std::string token, QObject *parent) : QObject(parent)
 {
     this->api = new Api(token);
+    this->b = new DataBase();
     manager = new QNetworkAccessManager();
 }
 
 TelegramBot::~TelegramBot()
 {
     delete this->api;
+    delete this->b;
     delete manager;
 }
 
@@ -46,19 +48,22 @@ void TelegramBot::managerFinished(QNetworkReply *reply, std::string id) {
 
 void TelegramBot::sendMultiMedia(std::string id, QList<QString> multimedia)
 {
-    std::string query = "https://api.telegram.org/bot1335356640:AAEd3ZJ16EceNkXx46PgNM9q8Gd7vchgsxk/sendMediaGroup?";
-    std::string chat_id = "chat_id="+id;
-    std::string media = "media=[";
-    for(QString tmp : multimedia)
-    {
-        media+="{\"type\":\"photo\",\"media\":\""+tmp.toStdString()+"\"},";
-    }
-    media = media.substr(0, media.length()-1);
-    media+="]";
-    query+=chat_id+"&"+media;
-    std::cout<<query<<std::endl;
-    this->request.setUrl(QString::fromStdString(query));
-    this->reply = this->manager->get(this->request);
+//    std::string query = "https://api.telegram.org/bot1335356640:AAEd3ZJ16EceNkXx46PgNM9q8Gd7vchgsxk/sendMediaGroup?";
+//    std::string chat_id = "chat_id="+id;
+//    std::string media = "media=[";
+//    for(QString tmp : multimedia)
+//    {
+//        media+="{\"type\":\"photo\",\"media\":\""+tmp.toStdString()+"\"},";
+//    }
+//    media = media.substr(0, media.length()-1);
+//    media+="]";
+//    query+=chat_id+"&"+media;
+//    std::cout<<query<<std::endl;
+//    this->request.setUrl(QString::fromStdString(query));
+//    qDebug() << this->request.url();
+//    this->reply = this->manager->get(this->request);
+
+
 }
 
 std::string TelegramBot::getChatId(QVariantMap msg)
@@ -83,14 +88,14 @@ void TelegramBot::auth(std::string id)
         managerFinished(reply, id);
     });
     this->api->sendMessage(id, "https://oauth.vk.com/authorize?client_id=7532475&display=page&redirect_uri="
-                               "https://556af7a0e8bb.ngrok.io&scope=friends%2Cwall%2Cgroups%2Coffline&response_type=code&v=5.52");
+                               "https://fast-headland-57918.herokuapp.com&scope=friends%2Cwall%2Cgroups%2Coffline&response_type=code&v=5.52");
 }
 
 void TelegramBot::parseCode(QUrl url)
 {
     QStringList list = url.toString().split("=", QString::SkipEmptyParts);
     QString code = list.at(list.size()-1);
-    this->request.setUrl("https://oauth.vk.com/access_token?client_id=7532475&client_secret=wsQzpMeHSVGmubpSX2no&redirect_uri=https://556af7a0e8bb.ngrok.io&code="+code);
+    this->request.setUrl("https://oauth.vk.com/access_token?client_id=7532475&client_secret=wsQzpMeHSVGmubpSX2no&redirect_uri=https://fast-headland-57918.herokuapp.com&code="+code);
     this->reply = this->manager->get(this->request);
 }
 
@@ -102,30 +107,16 @@ void TelegramBot::onTgMessageReceived(QVariantMap msg)
     if(message=="/start")
     {
         auth(chat);
+        if(this->b->getTime(chat) == "err")
+        	this->b->createRecord(chat, "0");
     }
     else if(message=="/get"){
         for (auto it = users.begin(); it != users.end(); ++it)
         {
             qDebug()<<it.key()<<" --- "<<QString::fromStdString(it.value().getToken());
         }
-        VkManager vk = users.value(QString::fromStdString(chat));
-        QList<VkPost> list = vk.getWall();
-        for(VkPost post:list)
-        {
-            QDateTime date;
-            date.setTime_t(post.getDate());
-            QString time = date.toString(Qt::SystemLocaleShortDate);
-            QDateTime t = QDateTime::fromTime_t(post.getDate());
-            std::string message = post.getOwner()+"\n"+post.getText()+"\n"+t.toString().toStdString();
-            QList<QString> l = post.getPhotos();
-            this->api->sendMessage(chat, message);
-            if(l.size()>1)
-            {
-                sendMultiMedia(chat, l);
-            }
-            else if(l.size()==1)
-                api->sendPhoto(chat, l[0].toStdString());
-        }
+
+        checkTime(chat);
     }
 }
 
@@ -133,6 +124,7 @@ bool TelegramBot::handleRequest(Tufao::HttpServerRequest &request,
                                 Tufao::HttpServerResponse &response)
 {
     QByteArray requestBody = request.readBody();
+    qDebug() << requestBody;
     QJsonDocument doc = QJsonDocument::fromJson(requestBody);
     QVariantMap msg = doc.object().toVariantMap();
     if(request.url().toString().contains("?code=")){
@@ -165,4 +157,39 @@ bool TelegramBot::handleRequest(Tufao::HttpServerRequest &request,
     }
     response.end("</ul></body></html>");
     return true;
+}
+
+void TelegramBot::checkTime(std::string chat){
+    std::string tmp = "0";
+    VkManager vk = users.value(QString::fromStdString(chat));
+    std::string db_time = this->b->getTime(chat);
+    QList<VkPost> list = vk.getWall();
+    for(VkPost post:list)
+    {
+        if (std::stoll(tmp) < post.getDate()){
+            tmp = std::to_string(post.getDate());
+        }
+        QDateTime date;
+        date.setTime_t(post.getDate());
+        QString time = date.toString(Qt::SystemLocaleShortDate);
+        QDateTime t = QDateTime::fromTime_t(post.getDate());
+        if(std::stoll(db_time) >= post.getDate()){
+            continue;
+        }
+
+        else{
+            std::string message = post.getOwner()+"\n"+post.getText()+"\n"+t.toString().toStdString();
+            QList<QString> l = post.getPhotos();
+            this->api->sendMessage(chat, message);
+            if(l.size()>1)
+            {
+                sendMultiMedia(chat, l);
+            }
+            else if(l.size()==1)
+                api->sendPhoto(chat, l[0].toStdString());
+
+        }
+    }
+    if(tmp.length() != 0)
+        this->b->updateTime(chat, tmp);
 }

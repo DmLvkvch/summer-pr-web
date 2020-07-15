@@ -102,23 +102,17 @@ WORKDIR tufao/
 RUN git checkout 1.1
 RUN mkdir build
 WORKDIR build
-RUN ls
 RUN cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 RUN make -j5
 RUN sudo make install
 WORKDIR /home/dmlvkvch
 COPY ./src /home/dmlvkvch
-RUN ls
 RUN make -C src
 RUN qmake "CONFIG+=tg" tg.pro
-RUN ls
 RUN git clone https://github.com/Kolsha/VK
 WORKDIR VK
 RUN make
-RUN ls
 WORKDIR /home/dmlvkvch
 RUN cp -i VK/vk.so .
-RUN ls
 RUN make
-RUN ls
 CMD ./tg $PORT
