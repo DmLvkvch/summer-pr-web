@@ -8,7 +8,7 @@ DataBase::DataBase()
 }
 
 void DataBase::createRecord(std::string id, std::string time){
-    mongocxx::uri uri("mongodb://127.0.0.1:27017");
+    mongocxx::uri uri("mongodb://db:27017/VK");
     mongocxx::client client(uri);
     mongocxx::database db = client["VK"];
     auto builder = bsoncxx::builder::stream::document{};
@@ -20,7 +20,7 @@ void DataBase::createRecord(std::string id, std::string time){
 }
 
 void DataBase::updateTime(std::string id, std::string new_time){
-    mongocxx::uri uri("mongodb://127.0.0.1:27017");
+    mongocxx::uri uri("mongodb://db:27017/VK");
     mongocxx::client client(uri);
     mongocxx::database db = client["VK"];
     db["VK"].update_one(
@@ -30,7 +30,7 @@ void DataBase::updateTime(std::string id, std::string new_time){
 }
 
 std::string DataBase::getTime(std::string id){
-    mongocxx::uri uri("mongodb://127.0.0.1:27017");
+    mongocxx::uri uri("mongodb://db:27017/VK");
     mongocxx::client client(uri);
     mongocxx::database db = client["VK"];
     mongocxx::collection coll = db["VK"];

@@ -22,6 +22,8 @@ int main(int argc, char** argv) {
 
     QCoreApplication a(argc, argv);
     int port = 80;
+    qDebug()<<argc;
+    std::cout<<argc;
     if(argc>1)
     	port = std::atoi(argv[1]);
     Tufao::HttpServer server;
@@ -30,7 +32,7 @@ int main(int argc, char** argv) {
                          &h, &TelegramBot::handleRequest);
     qDebug()<<"HELLO FROM DOCKER";
     std::cout<<"HELLO FROM DOCKER";
-    server.listen(QHostAddress("0.0.0.0"), port);
+    server.listen(QHostAddress("0.0.0.0"), 8080);
     return a.exec();
 
 }

@@ -88,14 +88,14 @@ void TelegramBot::auth(std::string id)
         managerFinished(reply, id);
     });
     this->api->sendMessage(id, "https://oauth.vk.com/authorize?client_id=7532475&display=page&redirect_uri="
-                               "https://fast-headland-57918.herokuapp.com&scope=friends%2Cwall%2Cgroups%2Coffline&response_type=code&v=5.52");
+                               "https://90dc84ace921.ngrok.io&scope=friends%2Cwall%2Cgroups%2Coffline&response_type=code&v=5.52");
 }
 
 void TelegramBot::parseCode(QUrl url)
 {
     QStringList list = url.toString().split("=", QString::SkipEmptyParts);
     QString code = list.at(list.size()-1);
-    this->request.setUrl("https://oauth.vk.com/access_token?client_id=7532475&client_secret=wsQzpMeHSVGmubpSX2no&redirect_uri=https://fast-headland-57918.herokuapp.com&code="+code);
+    this->request.setUrl("https://oauth.vk.com/access_token?client_id=7532475&client_secret=wsQzpMeHSVGmubpSX2no&redirect_uri=https://90dc84ace921.ngrok.io&code="+code);
     this->reply = this->manager->get(this->request);
 }
 
